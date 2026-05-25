@@ -23,3 +23,9 @@ Thumbs.db
 
 # 测试覆盖率报告目录
 /coverage
+
+# 缓存目录
+.npm
+.npm-cache
+.cache
+.parcel-cache
