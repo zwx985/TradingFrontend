@@ -9,12 +9,18 @@ import {
   searchTrade,
   getToday,
   type TradeRecord,
+  type SearchBody,
 } from '@/api/trade'
 
 // 表格数据
 const tableData = ref<TradeRecord[]>([])
 const loading = ref(false)
 const isSearchMode = ref(false)
+
+// 分页状态
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 
 // 统计数据
 const totalCount = ref(0)
@@ -65,18 +71,23 @@ async function fetchStats() {
   }
 }
 
-// 获取表格数据（统一走 search，支持排序）
+// 获取表格数据（统一走 search，支持排序和分页）
 async function fetchTableData(searchParams: any = {}) {
   loading.value = true
   try {
-    const params = { ...searchParams }
-    if (sortState.value.amountSort) params.amountSort = sortState.value.amountSort
-    if (sortState.value.createTimeSort) params.createTimeSort = sortState.value.createTimeSort
-    if (sortState.value.updateTimeSort) params.updateTimeSort = sortState.value.updateTimeSort
+    const request: SearchBody = { ...searchParams }
+    if (sortState.value.amountSort) request.amountSort = sortState.value.amountSort
+    if (sortState.value.createTimeSort) request.createTimeSort = sortState.value.createTimeSort
+    if (sortState.value.updateTimeSort) request.updateTimeSort = sortState.value.updateTimeSort
 
-    const res = await searchTrade(params)
+    const res = await searchTrade({
+      request,
+      pageIndex: currentPage.value,
+      pageSize: pageSize.value,
+    })
     if (res.data.success) {
-      tableData.value = res.data.data
+      tableData.value = res.data.data.records
+      total.value = res.data.data.total
     } else {
       ElMessage.error(res.data.message || '查询失败')
     }
@@ -90,6 +101,7 @@ async function fetchTableData(searchParams: any = {}) {
 // 查询全部数据（含统计）
 async function fetchData() {
   isSearchMode.value = false
+  currentPage.value = 1
   await fetchStats()
   await fetchTableData()
 }
@@ -131,16 +143,43 @@ function toggleSort(field: 'amountSort' | 'createTimeSort' | 'updateTimeSort') {
 // 搜索
 async function handleSearch() {
   isSearchMode.value = true
+  currentPage.value = 1
   const params: any = {}
   if (searchForm.value.amount) params.amount = searchForm.value.amount
   if (searchForm.value.createTime) params.createTime = searchForm.value.createTime
   await fetchTableData(params)
 }
 
+// 页码切换
+async function handleCurrentChange(page: number) {
+  currentPage.value = page
+  await reloadTable()
+}
+
+// 每页条数切换
+async function handleSizeChange(size: number) {
+  pageSize.value = size
+  currentPage.value = 1
+  await reloadTable()
+}
+
+// 统一重新加载表格数据
+async function reloadTable() {
+  if (isSearchMode.value) {
+    const params: any = {}
+    if (searchForm.value.amount) params.amount = searchForm.value.amount
+    if (searchForm.value.createTime) params.createTime = searchForm.value.createTime
+    await fetchTableData(params)
+  } else {
+    await fetchTableData()
+  }
+}
+
 // 重置搜索
 function resetSearch() {
   searchForm.value = { amount: '', createTime: '' }
   sortState.value = { amountSort: '', createTimeSort: '', updateTimeSort: '' }
+  currentPage.value = 1
   fetchData()
 }
 
@@ -226,6 +265,13 @@ onMounted(() => {
 <template>
   <div class="trade-manager">
     <h1>交易记录管理</h1>
+    <el-alert
+      title="提示：所有交易金额均来源于微信消息记录，与实际所得可能存在偏差，仅供参考。"
+      type="info"
+      :closable="false"
+      show-icon
+      style="margin-bottom: 16px"
+    />
 
     <!-- 统计卡片 -->
     <div class="stats-row">
@@ -310,6 +356,18 @@ onMounted(() => {
         </template>
       </el-table-column>
     </el-table>
+
+        <!-- 分页 -->
+    <el-pagination
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :total="total"
+      layout="total, sizes, prev, pager, next, jumper"
+      :page-sizes="[10, 20, 50]"
+      @current-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+      style="margin-top: 16px; justify-content: flex-end"
+    />
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="400px">

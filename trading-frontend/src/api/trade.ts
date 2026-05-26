@@ -18,6 +18,14 @@ export interface TradeAllListResponse {
   records: TradeRecord[]
 }
 
+export interface PageResult<T> {
+  records: T[]
+  total: number
+  pageIndex: number
+  pageSize: number
+  pages: number
+}
+
 export interface ApiResponse<T> {
   success: boolean
   data: T
@@ -41,15 +49,26 @@ export function deleteTrade(id: string) {
   return request.delete<ApiResponse<void>>(`/v1/trade-project/${id}`)
 }
 
-export function searchTrade(params: {
+export interface SearchBody {
   id?: string
   amount?: string
   createTime?: string
   amountSort?: string
   createTimeSort?: string
   updateTimeSort?: string
-}) {
-  return request.post<ApiResponse<TradeRecord[]>>('/v1/trade-project/search', params)
+}
+
+export interface PageRequest<T> {
+  request: T
+  pageIndex?: number
+  pageSize?: number
+}
+
+export function searchTrade(pageRequest: PageRequest<SearchBody>) {
+  return request.post<ApiResponse<PageResult<TradeRecord>>>(
+    '/v1/trade-project/search',
+    pageRequest,
+  )
 }
 
 export function getToday() {
