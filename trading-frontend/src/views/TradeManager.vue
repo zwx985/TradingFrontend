@@ -273,7 +273,7 @@ onMounted(() => {
 
 <template>
   <div class="trade-manager">
-    <h1>交易记录管理</h1>
+    <h1>天才交易员</h1>
     <el-alert
       title="提示：所有交易金额均来源于微信消息记录，与实际所得可能存在偏差，仅供参考。"
       type="info"
