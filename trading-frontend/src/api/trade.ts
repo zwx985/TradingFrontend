@@ -16,6 +16,8 @@ export interface TradeAllListResponse {
   totalCount: number
   totalAmount: string
   records: TradeRecord[]
+  maxCumulativeAmount: string | null
+  maxCumulativeDate: string | null
 }
 
 export interface PageResult<T> {

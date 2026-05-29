@@ -26,6 +26,8 @@ const total = ref(0)
 const totalCount = ref(0)
 const totalAmount = ref('0.00')
 const todayAmount = ref<string | null>(null)
+const maxCumulativeAmount = ref<string | null>(null)
+const maxCumulativeDate = ref<string | null>(null)
 
 // 搜索表单
 const searchForm = ref({
@@ -65,6 +67,8 @@ async function fetchStats() {
     if (res.data.success) {
       totalCount.value = res.data.data.totalCount
       totalAmount.value = res.data.data.totalAmount
+      maxCumulativeAmount.value = res.data.data.maxCumulativeAmount
+      maxCumulativeDate.value = res.data.data.maxCumulativeDate
     }
   } catch {
     // ignore
@@ -287,6 +291,11 @@ onMounted(() => {
         <div class="stat-label">当日金额</div>
         <div class="stat-value">{{ todayAmount ?? '-' }}</div>
       </el-card>
+      <el-card class="stat-card">
+        <div class="stat-label">历史最高累计</div>
+        <div class="stat-value">{{ maxCumulativeAmount ?? '-' }}</div>
+        <div v-if="maxCumulativeDate" class="stat-sublabel">{{ maxCumulativeDate }}</div>
+      </el-card>
     </div>
 
     <!-- 搜索区域 -->
@@ -426,6 +435,12 @@ h1 {
   font-size: 24px;
   font-weight: bold;
   color: #333;
+}
+
+.stat-sublabel {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
 }
 
 .search-card {
