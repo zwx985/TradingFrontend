@@ -12,12 +12,29 @@ export interface TradeRecord {
   updateTime: string
 }
 
+export interface MaxCumulativeProfit {
+  amount: string | null
+  date: string | null
+}
+
+export interface MaxDailyProfit {
+  amount: string | null
+  date: string | null
+}
+
+export interface MaxSubarrayProfit {
+  amount: string | null
+  startDate: string | null
+  endDate: string | null
+}
+
 export interface TradeAllListResponse {
   totalCount: number
   totalAmount: string
   records: TradeRecord[]
-  maxCumulativeAmount: string | null
-  maxCumulativeDate: string | null
+  maxCumulativeProfit: MaxCumulativeProfit | null
+  maxDailyProfit: MaxDailyProfit | null
+  maxSubarrayProfit: MaxSubarrayProfit | null
 }
 
 export interface PageResult<T> {

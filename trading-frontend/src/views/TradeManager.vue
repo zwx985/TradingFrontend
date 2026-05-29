@@ -10,6 +10,9 @@ import {
   getToday,
   type TradeRecord,
   type SearchBody,
+  type MaxCumulativeProfit,
+  type MaxDailyProfit,
+  type MaxSubarrayProfit,
 } from '@/api/trade'
 
 // 表格数据
@@ -26,8 +29,9 @@ const total = ref(0)
 const totalCount = ref(0)
 const totalAmount = ref('0.00')
 const todayAmount = ref<string | null>(null)
-const maxCumulativeAmount = ref<string | null>(null)
-const maxCumulativeDate = ref<string | null>(null)
+const maxCumulativeProfit = ref<MaxCumulativeProfit | null>(null)
+const maxDailyProfit = ref<MaxDailyProfit | null>(null)
+const maxSubarrayProfit = ref<MaxSubarrayProfit | null>(null)
 
 // 搜索表单
 const searchForm = ref({
@@ -67,8 +71,9 @@ async function fetchStats() {
     if (res.data.success) {
       totalCount.value = res.data.data.totalCount
       totalAmount.value = res.data.data.totalAmount
-      maxCumulativeAmount.value = res.data.data.maxCumulativeAmount
-      maxCumulativeDate.value = res.data.data.maxCumulativeDate
+      maxCumulativeProfit.value = res.data.data.maxCumulativeProfit
+      maxDailyProfit.value = res.data.data.maxDailyProfit
+      maxSubarrayProfit.value = res.data.data.maxSubarrayProfit
     }
   } catch {
     // ignore
@@ -293,8 +298,20 @@ onMounted(() => {
       </el-card>
       <el-card class="stat-card">
         <div class="stat-label">历史最高累计</div>
-        <div class="stat-value">{{ maxCumulativeAmount ?? '-' }}</div>
-        <div v-if="maxCumulativeDate" class="stat-sublabel">{{ maxCumulativeDate }}</div>
+        <div class="stat-value">{{ maxCumulativeProfit?.amount ?? '-' }}</div>
+        <div v-if="maxCumulativeProfit?.date" class="stat-sublabel">{{ maxCumulativeProfit.date }}</div>
+      </el-card>
+      <el-card class="stat-card">
+        <div class="stat-label">单日最高</div>
+        <div class="stat-value">{{ maxDailyProfit?.amount ?? '-' }}</div>
+        <div v-if="maxDailyProfit?.date" class="stat-sublabel">{{ maxDailyProfit.date }}</div>
+      </el-card>
+      <el-card class="stat-card">
+        <div class="stat-label">连续区间最高</div>
+        <div class="stat-value">{{ maxSubarrayProfit?.amount ?? '-' }}</div>
+        <div v-if="maxSubarrayProfit?.startDate && maxSubarrayProfit?.endDate" class="stat-sublabel">
+          {{ maxSubarrayProfit.startDate }} ~ {{ maxSubarrayProfit.endDate }}
+        </div>
       </el-card>
     </div>
 
